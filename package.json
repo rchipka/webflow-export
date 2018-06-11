@@ -1,0 +1,14 @@
+{
+  "name": "webflow-export",
+  "version": "0.0.1",
+  "description": "Export webflow elements and styles",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "devDependencies": {},
+  "dependencies": {
+    "fs-extra": "^6.0.1",
+    "osmosis": "^1.1.6",
+    "sugar": "^2.0.4"
+  }
+}
