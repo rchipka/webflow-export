@@ -65,9 +65,9 @@ module.exports = function (opts) {
   .data(function (data) {
     console.log(data.elements);
 
-    fs.writeJsonSync(path.resolve(opts.base, 'webflow-elements.json'), data.elements);
+    fs.writeJsonSync(path.resolve(opts.base, opts.json), data.elements);
 
-    fs.outputFileSync(path.resolve(cssDir, 'webflow.css'), data.styles);
+    fs.outputFileSync(path.resolve(opts.base, opts.css), data.styles);
   })
   .log(console.error)
   .error(console.error);
