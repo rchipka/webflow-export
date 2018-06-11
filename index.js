@@ -13,7 +13,7 @@ module.exports = function (opts) {
   var partsDir = path.resolve(opts.base, opts.json);
   var cssDir = path.resolve(opts.base, opts.css);
 
-  fs.ensureDir(partsDir);
+  // fs.ensureDir(partsDir);
 
   osmosis.get(opts.url).set({
     'styles': osmosis.find('link[rel="stylesheet"]:first').config({ parse: false }).get(function (context) {
