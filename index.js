@@ -51,13 +51,39 @@ module.exports = function (opts) {
     $('.webflow-page-label').remove();
 
     data.elements.forEach(function (c) {
-      $(c.node).after('<div>{{ webflow_render(' + JSON.stringify(c.node.getAttribute('class').split(/\s+/)) + ') }}</div>');
+      c.node.addNextSibling($('<div>{{ webflow_render(' + JSON.stringify(c.node.getAttribute('class').split(/\s+/)) + ') }}</div>')[0]);
+      var loopAttr = c.node.getAttribute('v-for') || c.node.getAttribute('foreach');
+
+      if (loopAttr && c.node.children.length > 0) {
+        c.node.children[0].addPrevSibling(document.createTextNode('{% for ' + loopAttr + ' %}'));
+        c.node.children[c.node.children.length - 1].addNextSibling(document.createTextNode('{% endfor %}'));
+
+        var total = 0;
+
+        c.node.children.forEach(function (child, index, arr) {
+          if (child.nodeName) {
+            total++;
+          }
+        });
+
+        var index = 0;
+
+        c.node.children.forEach(function (child) {
+          if (child.addPrevSibling) {
+            child.addPrevSibling(document.createTextNode('{% if loop.index0 % ' + total + ' == ' + (index++) + ' %}'));
+            child.addNextSibling(document.createTextNode('{% endif %}'));
+          }
+        });
+      }
+    });
+
+    data.elements.forEach(function (c) {
       $(c.node).remove();
     });
 
     data.elements.forEach(function (c) {
-      console.log(c.node.toString(true) + "\n\n");
       c.html = c.node.toString(true);
+      // console.log(c.html);
     });
 
     delete data.node;
