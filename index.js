@@ -7,11 +7,11 @@ require('sugar')();
 
 var osmosis = require('osmosis');
 
-var compile = function (opts) {
+var export = function (opts) {
   console.log(opts);
 
-  var partsDir = path.resolve(opts.base, 'parts/webflow');
-  var cssDir = path.resolve(opts.base, 'build/css');
+  var partsDir = path.resolve(opts.base, opts.json);
+  var cssDir = path.resolve(opts.base, opts.css);
 
   fs.ensureDir(partsDir);
 
@@ -74,7 +74,4 @@ var compile = function (opts) {
 
 }
 
-compile({
-  base: path.resolve(__dirname, '../'),
-  url: 'http://vbtk-webflow.webflow.io/',
-});
+module.exports = export;
