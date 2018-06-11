@@ -7,7 +7,7 @@ require('sugar')();
 
 var osmosis = require('osmosis');
 
-var export = function (opts) {
+module.exports = function (opts) {
   console.log(opts);
 
   var partsDir = path.resolve(opts.base, opts.json);
@@ -73,5 +73,3 @@ var export = function (opts) {
   .error(console.error);
 
 }
-
-module.exports = export;
