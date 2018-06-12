@@ -83,6 +83,13 @@ module.exports = function (opts) {
       node.addPrevSibling(document.createTextNode('{% if ' + condition + ' %}'));
       node.addNextSibling(document.createTextNode('{% endif %}'));
     });
+    document.find('[replace]').forEach(function (node) {
+      var value = node.getAttribute('replace');
+
+      $(node.children).remove();
+
+      node.addChild(document.createTextNode('{{ ' + value + ' }}'));
+    });
 
     data.elements.forEach(function (c) {
       c.node.addNextSibling(document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute('class').split(/\s+/)).replace(/"/g, '\'') + ', _context) }}'));
