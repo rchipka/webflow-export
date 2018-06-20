@@ -21,6 +21,11 @@ module.exports = function (opts) {
     }).then(function (context, data, next) {
       next(context, context.toString());
     }),
+    'script': osmosis.find('script[src^="https://uploads-ssl.webflow.com"]').config({ parse: false }).get(function (context) {
+      return context.getAttribute('src');
+    }).then(function (context, data, next) {
+      next(context, context.toString());
+    }),
     'fields': ['@data-field'],
     'elements': osmosis.find('body [class]').then(function (node, data, next) {
       data.keys = node.find('ancestor::*[class]').filter(function (n) {
@@ -109,6 +114,10 @@ module.exports = function (opts) {
     fs.writeJsonSync(path.resolve(opts.base, opts.json), data.elements);
 
     fs.outputFileSync(path.resolve(opts.base, opts.css), data.styles);
+
+    if (opts.js) {
+      fs.outputFileSync(path.resolve(opts.base, opts.js), data.script);
+    }
   })
   .log(console.error)
   .error(console.error);
