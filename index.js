@@ -88,6 +88,13 @@ module.exports = function (opts) {
       node.addPrevSibling(document.createTextNode('{% if ' + condition + ' %}'));
       node.addNextSibling(document.createTextNode('{% endif %}'));
     });
+
+    document.find('[v-background-image]').forEach(function (node) {
+      var value = node.getAttribute('v-background-image');
+
+      node.setAttribute('style', 'background-image:url({{' + value + '}})');
+    });
+
     document.find('[replace]').forEach(function (node) {
       var value = node.getAttribute('replace');
 
