@@ -1,5 +1,6 @@
 'use strict';
 
+const css = require('css');
 const fs = require('fs-extra'),
       path = require('path');
 
@@ -82,51 +83,72 @@ module.exports = function (opts) {
       }
     });
 
-    data.styles = data.styles.replace(/([^\{\n@]+)\{\n*([^\}]+)\n*}/g, function (v, m1, m2) {
-      var selector = m1.trim().split(',').map(function (selector) {
-        if (!/^[#\.]/.test(selector)) {
-          return '.w-container ' + selector;
+    var styles = css.parse(data.styles);
+
+    var rules = styles.stylesheet.rules.filter({type:'media'}).map(function (v) {
+      if (!v.rules) {
+        return null;
+      }
+
+      if (!Array.isArray(v.rules)) {
+        v.rules = [v.rules];
+      }
+
+      return v.rules;
+    });
+
+    rules.push(styles.stylesheet.rules);
+
+    rules.forEach(function (rules, ruleIndex) {
+      if (!rules) {
+        return;
+      }
+
+      rules.forEach(function (rule) {
+        if (!rule.selectors || !rule.declarations) {
+          return;
         }
 
-        return selector;
-      }).join(', ');
-
-      var styles = m2.replace(/\s+/g, ' ').split(/\s*;\s*/).map(function (v) {
-        return v.split(/^([^:]+):\s*/).compact(true).map('trim');
-      }).filter((v) => v.length > 0);
-
-      
-
-      try {
-        var nodes = document.find(selector);
-      } catch (e) {
-        console.error(e);
-      }
-
-      if (nodes && nodes.length > 0) {
-        styles.forEach(function (s) {
-          if (s[0] === 'background-image' && s[1].indexOf('url(') !== -1) {
-            nodes.forEach(function (n) {
-              var url = n.getAttribute('data-background-image');
-
-              if (!url) {
-                return;
-              }
-
-              n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + s[1].replace(/url\(([^\)]*)\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
-            });
-          }
+        rule.selectors.forEach(function (selector, i) {
+          rule.selectors[i] = '.w-root ' + selector;
         });
-      }
 
-      var ret = selector + ' {\n\t' + styles.map(function (a) {
-        return a.join(':') + ';';
-      }).join('\n\t') + ' }\n';
+        rule.selectors = rule.selectors.unique();
 
-      console.log(ret);
+        var selector = rule.selectors.compact(true).join(', ').trim();
 
-      return ret;
+        if (!selector) {
+          rules.remove(rule);
+          return;
+        }
+
+        try {
+          var nodes = document.find(selector);
+        } catch (e) {
+          console.error(e);
+        }
+
+        if (nodes) {
+          rule.declarations.forEach(function (d, i) {
+            if (d.property == 'background-image' && d.value.indexOf('url(') !== -1) {
+              nodes.forEach(function (n) {
+                var url = n.getAttribute('data-background-image');
+
+                if (!url) {
+                  return;
+                }
+
+                n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + d.value.replace(/url\(([^\)]*)\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
+              });
+            }
+          });
+        }
+      });
     });
+
+    data.styles = css.stringify(styles);
+
+    console.log(data.styles);
 
     // process.exit();
 
