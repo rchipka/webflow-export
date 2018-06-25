@@ -109,12 +109,6 @@ module.exports = function (opts) {
           return;
         }
 
-        rule.selectors.forEach(function (selector, i) {
-          rule.selectors[i] = '.w-root ' + selector;
-        });
-
-        rule.selectors = rule.selectors.unique();
-
         var selector = rule.selectors.compact(true).join(', ').trim();
 
         if (!selector) {
@@ -125,7 +119,7 @@ module.exports = function (opts) {
         try {
           var nodes = document.find(selector);
         } catch (e) {
-          console.error(e);
+          // console.error(e);
         }
 
         if (nodes) {
@@ -143,6 +137,12 @@ module.exports = function (opts) {
             }
           });
         }
+
+        rule.selectors.forEach(function (selector, i) {
+          rule.selectors[i] = '.w-root ' + selector;
+        });
+
+        rule.selectors = rule.selectors.unique();
       });
     });
 
