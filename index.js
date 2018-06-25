@@ -82,17 +82,42 @@ module.exports = function (opts) {
       }
     });
 
+    data.styles.replace(/\n([^\{\n@]+)\{\n([^\}]+)\n}/g, function (v, m1, m2) {
+      var selector = m1.trim();
+      var styles = m2.replace(/\s+/g, ' ').split(/\s*;\s*/).map(function (v) {
+        return v.split(/^([^:]+):\s*/).compact(true).map('trim');
+      }).filter((v) => v.length > 0);
+
+      var nodes = document.find(selector);
+
+      if (nodes.length < 1) {
+        return;
+      }
+
+      styles.forEach(function (s) {
+        if (s[0] === 'background-image' && s[1].indexOf('url(') !== -1) {
+          nodes.forEach(function (n) {
+            var url = n.getAttribute('data-background-image');
+
+            if (!url) {
+              return;
+            }
+
+            n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + s[1].replace(/url\(([^\)]*)\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
+          });
+        }
+      });
+
+      console.log(selector, styles);
+    });
+
+    // process.exit();
+
     document.find('[if], [v-if]').forEach(function (node) {
       var condition = node.getAttribute('v-if');
 
       node.addPrevSibling(document.createTextNode('{% if ' + condition + ' %}'));
       node.addNextSibling(document.createTextNode('{% endif %}'));
-    });
-
-    document.find('[v-background-image]').forEach(function (node) {
-      var value = node.getAttribute('v-background-image');
-
-      node.setAttribute('style', 'background-image:url({{' + value + '}})');
     });
 
     document.find('[replace]').forEach(function (node) {
@@ -101,6 +126,8 @@ module.exports = function (opts) {
       $(node.children).remove();
 
       node.addChild(document.createTextNode('{{ ' + value + ' }}'));
+
+      node.setAttribute('replace', '');
     });
 
     data.elements.forEach(function (c) {
@@ -119,6 +146,8 @@ module.exports = function (opts) {
     console.log(data.elements);
 
     fs.writeJsonSync(path.resolve(opts.base, opts.json), data.elements);
+
+    // .replace(/url\(([^\)]*)\)/g, 'attr(data-background-image url, $1)') not yet supported
 
     fs.outputFileSync(path.resolve(opts.base, opts.css), data.styles);
 
