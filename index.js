@@ -88,7 +88,12 @@ module.exports = function (opts) {
         return v.split(/^([^:]+):\s*/).compact(true).map('trim');
       }).filter((v) => v.length > 0);
 
-      var nodes = document.find(selector);
+      try {
+        var nodes = document.find(selector);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
 
       if (nodes.length < 1) {
         return;
