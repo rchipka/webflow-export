@@ -82,38 +82,45 @@ module.exports = function (opts) {
       }
     });
 
-    data.styles.replace(/\n([^\{\n@]+)\{\n([^\}]+)\n}/g, function (v, m1, m2) {
+    data.styles = data.styles.replace(/\n([^\{\n@]+)\{\n([^\}]+)\n}/g, function (v, m1, m2) {
       var selector = m1.trim();
       var styles = m2.replace(/\s+/g, ' ').split(/\s*;\s*/).map(function (v) {
         return v.split(/^([^:]+):\s*/).compact(true).map('trim');
       }).filter((v) => v.length > 0);
 
+      if (/^[a-z0-9\s]+/.test(selector)) {
+        selector = '.w-container ' + selector;
+      }
+
       try {
         var nodes = document.find(selector);
       } catch (e) {
         console.error(e);
-        return;
       }
 
-      if (nodes.length < 1) {
-        return;
+      if (nodes && nodes.length > 0) {
+        styles.forEach(function (s) {
+          if (s[0] === 'background-image' && s[1].indexOf('url(') !== -1) {
+            nodes.forEach(function (n) {
+              var url = n.getAttribute('data-background-image');
+
+              if (!url) {
+                return;
+              }
+
+              n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + s[1].replace(/url\(([^\)]*)\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
+            });
+          }
+        });
       }
 
-      styles.forEach(function (s) {
-        if (s[0] === 'background-image' && s[1].indexOf('url(') !== -1) {
-          nodes.forEach(function (n) {
-            var url = n.getAttribute('data-background-image');
+      var ret = selector + ' {\n\t' + styles.map(function (a) {
+        return a.join(':') + ';';
+      }).join('\n\t') + ' }\n';
 
-            if (!url) {
-              return;
-            }
+      console.log(ret);
 
-            n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + s[1].replace(/url\(([^\)]*)\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
-          });
-        }
-      });
-
-      console.log(selector, styles);
+      return ;
     });
 
     // process.exit();
