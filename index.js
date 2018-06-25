@@ -82,15 +82,20 @@ module.exports = function (opts) {
       }
     });
 
-    data.styles = data.styles.replace(/\n([^\{\n@]+)\{\n([^\}]+)\n}/g, function (v, m1, m2) {
-      var selector = m1.trim();
+    data.styles = data.styles.replace(/([^\{\n@]+)\{\n*([^\}]+)\n*}/g, function (v, m1, m2) {
+      var selector = m1.trim().split(',').map(function (selector) {
+        if (!/^[#\.]/.test(selector)) {
+          return '.w-container ' + selector;
+        }
+
+        return selector;
+      }).join(', ');
+
       var styles = m2.replace(/\s+/g, ' ').split(/\s*;\s*/).map(function (v) {
         return v.split(/^([^:]+):\s*/).compact(true).map('trim');
       }).filter((v) => v.length > 0);
 
-      if (/^[a-z0-9\s]+/.test(selector)) {
-        selector = '.w-container ' + selector;
-      }
+      
 
       try {
         var nodes = document.find(selector);
