@@ -120,7 +120,7 @@ module.exports = function (opts) {
 
       console.log(ret);
 
-      return ;
+      return ret;
     });
 
     // process.exit();
