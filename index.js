@@ -54,6 +54,8 @@ module.exports = function (opts) {
     var window = document.defaultView,
         $ = window.jQuery;
 
+    $('[data-exclude]').remove();
+
     $('.webflow-page-label').remove();
 
     data.elements.forEach(function (c) {
