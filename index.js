@@ -111,6 +111,12 @@ module.exports = function (opts) {
           return;
         }
 
+        rule.selectors.forEach(function (selector) {
+          if (/:active/.test(selector)) {
+            rule.selectors.push(selector.replace(/:active/g, '.w-active'));
+          }
+        });
+
         var selector = rule.selectors.compact(true).join(', ').trim();
 
         if (!selector) {
