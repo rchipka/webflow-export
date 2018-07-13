@@ -177,7 +177,7 @@ module.exports = function (opts) {
     });
 
     data.elements.forEach(function (c) {
-      c.html = c.node.toString().replace(/(https?:\/\/)?%7B%7B(%20)*/g, '{{ ').replace(/(%20)*%7D%7D/g, ' }}');
+      c.html = c.node.toString().replace(/(https?:\/\/)?%7B%7B(%20)*/g, '{{ ').replace(/(%20)*%7D%7D/g, ' }}')
             .replace(/\{\{\s+/g, '{{')
             .replace(/\s+\}\}/g, '}}');
       // console.log(c.html);
