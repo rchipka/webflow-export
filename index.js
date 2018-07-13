@@ -112,9 +112,13 @@ module.exports = function (opts) {
         }
 
         rule.selectors.forEach(function (selector) {
-          if (/:active/.test(selector)) {
-            rule.selectors.push(selector.replace(/:active/g, '.w-active'));
-          }
+          ['active', 'hover', 'visited', 'target', 'focus'].forEach(function (state) {
+            var regexp = new RegExp(':' + state, 'g');
+
+            if (regexp.test(selector)) {
+              rule.selectors.push(selector.replace(regexp, '.w-' + state));
+            }
+          });
         });
 
         var selector = rule.selectors.compact(true).join(', ').trim();
