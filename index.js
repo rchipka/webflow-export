@@ -11,10 +11,11 @@ var osmosis = require('osmosis');
 module.exports = function (opts) {
   console.log(opts);
 
-  var partsDir = path.resolve(opts.base, opts.json);
-  var cssDir = path.resolve(opts.base, opts.css);
+  if (!opts.pages) {
+    opts.pages = [];
+  }
 
-  // fs.ensureDir(partsDir);
+  var globalData = null;
 
   osmosis.get(opts.url).set({
     'styles': osmosis.find('link[rel="stylesheet"]:first').config({ parse: false }).get(function (context) {
@@ -27,10 +28,22 @@ module.exports = function (opts) {
     }).then(function (context, data, next) {
       next(context, context.toString());
     }),
-    'fields': ['@data-field'],
-    'elements': osmosis.find('body [class]').then(function (node, data, next) {
+  })
+  .paginate(function () {
+    return opts.pages.shift();
+  }, opts.pages.length)
+  .then(function (document) {
+    document.get('[src="https://code.jquery.com/jquery-3.3.1.min.js"]').setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
+  })
+  .set({
+    // 'fields': ['@data-field'],
+    'elements': osmosis.find(opts.includeBody ? '[class]' : 'body [class]').then(function (node, data, next) {
       data.keys = node.find('ancestor::*[class]').filter(function (n) {
-        return n.nodeName.toLowerCase() != 'body';
+        if (!opts.includeBody) {
+          return n.nodeName.toLowerCase() != 'body';
+        }
+
+        return true;
       }).map(function (n) {
         return n.getAttribute('class').split(/\s+/);
       });
@@ -46,9 +59,6 @@ module.exports = function (opts) {
       next(node, data);
     }),
   })
-  .then(function (document) {
-    document.get('[src="https://code.jquery.com/jquery-3.3.1.min.js"]').setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
-  })
   .click('body')
   .then(function (document, data) {
     var window = document.defaultView,
@@ -57,6 +67,12 @@ module.exports = function (opts) {
     $('[data-exclude]').remove();
 
     $('.webflow-page-label').remove();
+
+    $('body script').remove();
+
+    if (!data.elements) {
+      data.elements = [];
+    }
 
     data.elements.forEach(function (c) {
       var loopAttr = (c.node.getAttribute('v-for') || c.node.getAttribute('foreach') || '').replace(/\\*"/g, '\'');
@@ -123,6 +139,10 @@ module.exports = function (opts) {
 
         var selector = rule.selectors.compact(true).join(', ').trim();
 
+        if (/-webkit|-moz/.test(selector)) {
+          return;
+        }
+
         if (!selector) {
           rules.remove(rule);
           return;
@@ -151,7 +171,9 @@ module.exports = function (opts) {
         }
 
         rule.selectors.forEach(function (selector, i) {
-          rule.selectors[i] = '.w-root ' + selector;
+          if (!/\.w-root\b/.test(selector)) {
+            rule.selectors[i] = '.w-root ' + selector;
+          }
         });
 
         rule.selectors = rule.selectors.unique();
@@ -160,7 +182,7 @@ module.exports = function (opts) {
 
     data.styles = css.stringify(styles);
 
-    console.log(data.styles);
+    // console.log(data.styles);
 
     // process.exit();
 
@@ -181,31 +203,66 @@ module.exports = function (opts) {
       node.setAttribute('replace', '');
     });
 
-    data.elements.forEach(function (c) {
-      c.node.addNextSibling(document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute('class').split(/\s+/)).replace(/"/g, '\'') + ', _context) }}'));
-      $(c.node).remove();
-    });
 
     data.elements.forEach(function (c) {
-      c.html = c.node.toString().replace(/(https?:\/\/)?%7B%7B(%20)*/g, '{{ ').replace(/(%20)*%7D%7D/g, ' }}')
+      var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute('class').split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
+
+      // if (c.node.parentNode) {
+      //   c.node.parentNode.addChild(text);
+      // } else {
+        c.node.addNextSibling(text);
+      // }
+
+      c.node.remove();
+    });
+
+
+    data.elements.forEach(function (c) {
+      if (c.node.nodeName.toLowerCase() === 'body') {
+        c.html = c.node.innerHTML;
+      } else {
+        c.html = c.node.toString();
+      }
+      c.html = c.node.toString();
+
+
+      c.html = c.html.replace(/(https?:\/\/)?%7B%7B(%20)*/g, '{{ ').replace(/(%20)*%7D%7D/g, ' }}')
             .replace(/\{\{\s+/g, '{{')
             .replace(/\s+\}\}/g, '}}');
       // console.log(c.html);
+      // delete c.node;
     });
 
     delete data.node;
   })
   .data(function (data) {
-    console.log(data.elements);
+    if (!globalData) {
+      globalData = data;
+    }
 
-    fs.writeJsonSync(path.resolve(opts.base, opts.json), data.elements);
+    globalData.elements.append(data.elements);
+  })
+  .done(function () {
+    var data = globalData;
+
+    console.log('Templated '  + data.elements.length);
+
+    if (typeof opts.json === 'string') {
+      fs.writeJsonSync(path.resolve(opts.base, opts.json), data.elements);
+    }
 
     // .replace(/url\(([^\)]*)\)/g, 'attr(data-background-image url, $1)') not yet supported
 
-    fs.outputFileSync(path.resolve(opts.base, opts.css), data.styles);
+    if (typeof opts.css === 'string') {
+      fs.outputFileSync(path.resolve(opts.base, opts.css), data.styles);
+    }
 
-    if (opts.js) {
+    if (typeof opts.js === 'string') {
       fs.outputFileSync(path.resolve(opts.base, opts.js), data.script);
+    }
+
+    if (opts.callback instanceof Function) {
+      opts.callback(data);
     }
   })
   .log(console.error)
