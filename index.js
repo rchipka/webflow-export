@@ -97,7 +97,7 @@ module.exports = function (opts) {
       this.addChild(script1);
       this.addChild(script2);
 
-      console.log(this.innerHTML);
+      // console.log(this.innerHTML);
       // process.exit();
     });
 
