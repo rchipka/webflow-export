@@ -23,6 +23,9 @@ module.exports = function (opts) {
     }).then(function (context, data, next) {
       next(context, context.toString());
     }),
+    'head_scripts': osmosis.find('head script').then(function (context, data, next) {
+      next(context, context.toString());
+    }),
     'script': osmosis.find('script[src^="https://uploads-ssl.webflow.com"]').config({ parse: false }).get(function (context) {
       return context.getAttribute('src');
     }).then(function (context, data, next) {
@@ -222,6 +225,8 @@ module.exports = function (opts) {
 
     document.find('[replace]').forEach(function (node) {
       var value = node.getAttribute('replace');
+
+      $(this).find('[class]')
 
       $(node.children).remove();
 
