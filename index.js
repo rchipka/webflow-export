@@ -225,7 +225,8 @@ module.exports = function (opts) {
 
       $(node.children).remove();
 
-      node.addChild(document.createTextNode('{{ ' + value + ' }}'));
+      node.innerHTML = '{{ ' + value + ' }}';
+      // node.addChild(document.createTextNode('{{ ' + value + ' }}'));
 
       node.setAttribute('replace', '');
     });
