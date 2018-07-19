@@ -68,7 +68,9 @@ module.exports = function (opts) {
 
     $('.webflow-page-label').remove();
 
-    $('body script').remove();
+    if (opts.jquery !== true) {
+      $('body script[src*="jquery"]').remove();
+    }
 
     if (!data.elements) {
       data.elements = [];
