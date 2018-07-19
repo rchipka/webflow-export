@@ -72,6 +72,8 @@ module.exports = function (opts) {
       $('body script[src*="jquery"]').remove();
     }
 
+    $('body script').remove();
+
     if (!data.elements) {
       data.elements = [];
     }
