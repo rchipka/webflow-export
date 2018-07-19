@@ -78,6 +78,29 @@ module.exports = function (opts) {
       data.elements = [];
     }
 
+    $('body').each(function () {
+      var script1 = document.createElement('script');
+
+      script1.innerHTML = ('document.documentElement.setAttribute("data-wf-site", ' + JSON.stringify($(this).parents('[data-wf-site]').data('wf-site')) + ');');
+
+      var script2 = document.createElement('script');
+
+      script2.innerHTML = ('document.documentElement.setAttribute("data-wf-page", ' + JSON.stringify($(this).parents('[data-wf-page]').data('wf-page')) + ');');
+      // var text = document.createTextNode(
+      //   '<script>document.documentElement.setAttribute("data-wf-page", ' + JSON.stringify($(this).parents('[data-wf-page]').data('wf-page')) + ');</script>' +
+      //   '<script></script>'
+      //   );
+
+      // if (c.node.parentNode) {
+      //   c.node.parentNode.addChild(text);
+      // } else {
+      this.addChild(script1);
+      this.addChild(script2);
+
+      console.log(this.innerHTML);
+      // process.exit();
+    });
+
     data.elements.forEach(function (c) {
       var loopAttr = (c.node.getAttribute('v-for') || c.node.getAttribute('foreach') || '').replace(/\\*"/g, '\'');
 
