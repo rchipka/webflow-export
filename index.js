@@ -18,6 +18,11 @@ module.exports = function (opts) {
   var globalData = null;
 
   osmosis.get(opts.url).set({
+    'favicon': osmosis.find('link[rel="shortcut icon"]:first').config({ parse: false }).get(function (context) {
+      return context.getAttribute('href');
+    }).then(function (context, data, next) {
+      next(context, context.toString('base64'));
+    }),
     'styles': osmosis.find('link[rel="stylesheet"]:first').config({ parse: false }).get(function (context) {
       return context.getAttribute('href');
     }).then(function (context, data, next) {
