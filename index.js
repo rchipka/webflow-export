@@ -247,7 +247,8 @@ module.exports = function (opts) {
 
       $(node.children).remove();
 
-      node.innerHTML = '<?php ' + value + ' ?>';
+      // node.innerHTML = '<?php ' + value + ' ?>';
+      node.addChild(document.createTextNode('<?php ' + value + ' ?>'));
 
       node.setAttribute('php-content', '');
     });
