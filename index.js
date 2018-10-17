@@ -266,7 +266,7 @@ module.exports = function (opts) {
 
 
     data.elements.forEach(function (c) {
-      var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute(contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
+      var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute(opts.contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
 
       // if (c.node.parentNode) {
       //   c.node.parentNode.addChild(text);
