@@ -2,7 +2,8 @@
 
 const css = require('css');
 const fs = require('fs-extra'),
-      path = require('path');
+      path = require('path'),
+      entities = require('entities');
 
 require('sugar')();
 
@@ -49,7 +50,7 @@ module.exports = function (opts) {
   })
   .set({
     // 'fields': ['@data-field'],
-    'elements': osmosis.find(opts.includeBody ? '[' + opts.contextAttr + ']' : 'body [' + opts.contextAttr + ']').then(function (node, data, next) {
+    'elements': [osmosis.find(opts.includeBody ? '[' + opts.contextAttr + ']' : 'body [' + opts.contextAttr + ']').then(function (node, data, next) {
       data.keys = node.find('ancestor::*[' + opts.contextAttr + ']').filter(function (n) {
         if (!opts.includeBody) {
           return n.nodeName.toLowerCase() != 'body';
@@ -69,7 +70,7 @@ module.exports = function (opts) {
       // data.html = node.toString(true);
       data.node = node;
       next(node, data);
-    }),
+    })],
   })
   .click('body')
   .then(function (document, data) {
@@ -112,6 +113,10 @@ module.exports = function (opts) {
       // console.log(this.innerHTML);
       // process.exit();
     });
+
+    if (!data.elements) {
+      data.elements = [data.elements].compact();
+    }
 
     data.elements.forEach(function (c) {
       var loopAttr = (c.node.getAttribute('v-for') || c.node.getAttribute('foreach') || '').replace(/\\*"/g, '\'');
@@ -231,6 +236,9 @@ module.exports = function (opts) {
 
       node.addPrevSibling(document.createTextNode('{% if ' + condition + ' %}'));
       node.addNextSibling(document.createTextNode('{% endif %}'));
+
+      node.removeAttribute('v-if');
+      node.removeAttribute('if');
     });
 
     document.find('[php-block]').forEach(function (node) {
@@ -239,20 +247,20 @@ module.exports = function (opts) {
       node.addPrevSibling(document.createTextNode('<?php ' + condition + ' { ?>'));
       node.addNextSibling(document.createTextNode('<?php } ?>'));
 
-      node.setAttribute('php-block', '');
+      node.removeAttribute('php-block');
     });
 
     document.find('[php-content]').forEach(function (node) {
-      var value = node.getAttribute('replace');
+      var value = node.getAttribute('php-content');
 
       $(node.children).remove();
 
       // node.innerHTML = '<?php ' + value + ' ?>';
-      node.addChild(document.createTextNode('<?php ' + value + ' ?>'));
 
-      node.setAttribute('php-content', '');
+      node.addChild(document.createTextNode('<?php ' + entities.decodeHTML(value) + ' ?>'));
+
+      node.removeAttribute('php-content');
     });
-
 
     document.find('[replace]').forEach(function (node) {
       var value = node.getAttribute('replace');
@@ -262,9 +270,8 @@ module.exports = function (opts) {
       node.innerHTML = '{{ ' + value + ' }}';
       // node.addChild(document.createTextNode('{{ ' + value + ' }}'));
 
-      node.setAttribute('replace', '');
+      node.removeAttribute('replace');
     });
-
 
     data.elements.forEach(function (c) {
       var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute(opts.contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
@@ -329,5 +336,4 @@ module.exports = function (opts) {
   })
   .log(console.error)
   .error(console.error);
-
 }
