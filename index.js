@@ -3,7 +3,8 @@
 const css = require('css');
 const fs = require('fs-extra'),
       path = require('path'),
-      entities = require('entities');
+      entities = require('entities'),
+      url = require('url');
 
 require('sugar')();
 
@@ -22,7 +23,7 @@ module.exports = function (opts) {
 
   var globalData = null;
 
-  osmosis.get(opts.url).set({
+  osmosis.get(url.resolve(opts.url, opts.pages.shift() || '/')).set({
     'favicon': osmosis.find('link[rel="shortcut icon"]:first').config({ parse: false }).get(function (context) {
       return context.getAttribute('href');
     }).then(function (context, data, next) {
@@ -247,6 +248,7 @@ module.exports = function (opts) {
       node.addPrevSibling(document.createTextNode('<?php ' + condition + ' { ?>'));
       node.addNextSibling(document.createTextNode('<?php } ?>'));
 
+      node.setAttribute('php-block', '');
       node.removeAttribute('php-block');
     });
 
@@ -257,9 +259,19 @@ module.exports = function (opts) {
 
       // node.innerHTML = '<?php ' + value + ' ?>';
 
-      node.addChild(document.createTextNode('<?php ' + entities.decodeHTML(value) + ' ?>'));
+      node.addChild(document.createTextNode('<?php ' + value + ' ?>'));
 
+      node.setAttribute('php-content', '');
       node.removeAttribute('php-content');
+    });
+
+    document.find('[php-exclude]').forEach(function (node) {
+      node.children.forEach(function (c) {
+        c.remove();
+        node.addNextSibling(c);
+      });
+
+      node.remove();
     });
 
     document.find('[replace]').forEach(function (node) {
@@ -292,12 +304,13 @@ module.exports = function (opts) {
       } else {
         c.html = c.node.toString();
       }
-      c.html = c.node.toString();
-
 
       c.html = c.html.replace(/(https?:\/\/)?%7B%7B(%20)*/g, '{{ ').replace(/(%20)*%7D%7D/g, ' }}')
             .replace(/\{\{\s+/g, '{{')
-            .replace(/\s+\}\}/g, '}}');
+            .replace(/\s+\}\}/g, '}}')
+            .replace(/&amp;lt;\?php\s.+?\s\?&amp;gt;\s*($|<)/g, function (str) {
+              return entities.decodeHTML(entities.decodeHTML(str));
+            });
       // console.log(c.html);
       // delete c.node;
     });
