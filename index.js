@@ -15,6 +15,10 @@ module.exports = function (opts) {
     opts.pages = [];
   }
 
+  if (!opts.contextAttr) {
+    opts.contextAttr = 'class';
+  }
+
   var globalData = null;
 
   osmosis.get(opts.url).set({
@@ -45,20 +49,20 @@ module.exports = function (opts) {
   })
   .set({
     // 'fields': ['@data-field'],
-    'elements': osmosis.find(opts.includeBody ? '[class]' : 'body [class]').then(function (node, data, next) {
-      data.keys = node.find('ancestor::*[class]').filter(function (n) {
+    'elements': osmosis.find(opts.includeBody ? '[' + opts.contextAttr + ']' : 'body [' + opts.contextAttr + ']').then(function (node, data, next) {
+      data.keys = node.find('ancestor::*[' + opts.contextAttr + ']').filter(function (n) {
         if (!opts.includeBody) {
           return n.nodeName.toLowerCase() != 'body';
         }
 
         return true;
       }).map(function (n) {
-        return n.getAttribute('class').split(/\s+/);
+        return n.getAttribute(opts.contextAttr).split(/\s+/);
       });
 
-      data.keys.push(node.getAttribute('class').split(/\s+/));
+      data.keys.push(node.getAttribute(opts.contextAttr).split(/\s+/));
 
-      data.class = data.keys.map(function (keys) {
+      data.context = data.class = data.keys.map(function (keys) {
         return '.' + keys.join('.');
       }).join(' ');
 
@@ -125,7 +129,8 @@ module.exports = function (opts) {
         var classes = children.map((c) => c.getAttribute('class')).compact(true).unique(),
             conditions = children.map((c) => c.getAttribute('if') || c.getAttribute('v-if')).compact(true);
 
-        c.node.children[0].addPrevSibling(document.createTextNode('{% set item=\'\' %}{% for ' + loopAttr + ' %}{% if loop_context(loop, _key, _seq) %}{% set item = _seq[loop.index0] %}{% endif %}'));
+        c.node.children[0].addPrevSibling(document.createTextNode('{% set item=\'\' %}{% for ' + loopAttr + ' %}' +
+          '{% if loop_context(loop, _key, _seq) %}{% set item = _seq[loop.index0] %}{% endif %}'));
         c.node.children[c.node.children.length - 1].addNextSibling(document.createTextNode('{% endfor %}'));
 
         if (children.length > 0 && conditions.length < 1) {
@@ -228,10 +233,28 @@ module.exports = function (opts) {
       node.addNextSibling(document.createTextNode('{% endif %}'));
     });
 
-    document.find('[replace]').forEach(function (node) {
+    document.find('[php-block]').forEach(function (node) {
+      var condition = node.getAttribute('php-block');
+
+      node.addPrevSibling(document.createTextNode('<?php ' + condition + ' { ?>'));
+      node.addNextSibling(document.createTextNode('<?php } ?>'));
+
+      node.setAttribute('php-block', '');
+    });
+
+    document.find('[php-content]').forEach(function (node) {
       var value = node.getAttribute('replace');
 
-      $(this).find('[class]')
+      $(node.children).remove();
+
+      node.innerHTML = '<?php ' + value + ' ?>';
+
+      node.setAttribute('php-content', '');
+    });
+
+
+    document.find('[replace]').forEach(function (node) {
+      var value = node.getAttribute('replace');
 
       $(node.children).remove();
 
@@ -243,7 +266,7 @@ module.exports = function (opts) {
 
 
     data.elements.forEach(function (c) {
-      var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute('class').split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
+      var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute(contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
 
       // if (c.node.parentNode) {
       //   c.node.parentNode.addChild(text);
