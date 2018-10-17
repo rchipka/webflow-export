@@ -1,0 +1,177 @@
+{
+  "type": "@webflow/XscpData",
+  "payload": {
+    "nodes": [
+      {
+      "_id": "38779f4f-38e1-5ad5-ea39-4d4dbfecfb35",
+      "tag": "div",
+      "classes": ["caf08dee-7616-6b46-9033-f13c73751682", "6bce3798-5ba1-5356-9a98-7947466ae611"],
+      "children": ["65b43429-115c-b48d-b2e4-bca8e6f2a6b1"],
+      "data": {
+        "tag": "div"
+      },
+      "type": "Block"
+    }, {
+      "_id": "65b43429-115c-b48d-b2e4-bca8e6f2a6b1",
+      "tag": "div",
+      "classes": ["1be5d315-9d43-2366-8458-f064f316e830", "395513b9-ac76-65ea-b533-ae955aae02ad"],
+      "children": ["8512b598-3f7a-7493-25e1-146c02738478"],
+      "data": {
+        "tag": "div",
+        "xattr": [{
+          "name": "data-form-field",
+          "value": "sustainability-topic"
+        }, {
+          "name": "foreach",
+          "value": "item in get('sustainability_goals')"
+        }]
+      },
+      "type": "Block"
+    }, {
+      "_id": "8512b598-3f7a-7493-25e1-146c02738478",
+      "tag": "div",
+      "classes": ["8efa0b8e-f010-b008-9d81-c4f545b107b0"],
+      "children": ["8512b598-3f7a-7493-25e1-146c02738479"],
+      "data": {
+        "tag": "div"
+      },
+      "type": "Block"
+    }, {
+      "_id": "8512b598-3f7a-7493-25e1-146c02738479",
+      "tag": "a",
+      "classes": ["6edd9f2c-2ab3-0d7e-3ca5-c9d03dbcd98b", "20afaaa0-2020-5b2a-c0ea-83ac8957b4e0"],
+      "children": ["8512b598-3f7a-7493-25e1-146c0273847a"],
+      "data": {
+        "attr": {
+          "href": "#"
+        },
+        "link": {
+          "url": "#",
+          "mode": "external"
+        },
+        "xattr": [{
+          "name": "data-value",
+          "value": "{{ item.slug }}"
+        }, {
+          "name": "replace",
+          "value": "item.name"
+        }]
+      },
+      "type": "Link"
+    }, {
+      "_id": "8512b598-3f7a-7493-25e1-146c0273847a",
+      "text": true,
+      "v": "a really long title emaple right here now see how long this text is yeah"
+    }],
+    "styles": [{
+      "_id": "caf08dee-7616-6b46-9033-f13c73751682",
+      "fake": false,
+      "type": "class",
+      "name": "goals-select-wrapper",
+      "namespace": "",
+      "comb": "",
+      "styleLess": "overflow: auto; height: 250px; margin-bottom: 20px; background-color: white; box-shadow: inset 0 27px 21px -19px #ebe9e9, inset 0 -25px 39px -14px #eee;",
+      "variants": {},
+      "children": ["6bce3798-5ba1-5356-9a98-7947466ae611"],
+      "selector": null
+    }, {
+      "_id": "6bce3798-5ba1-5356-9a98-7947466ae611",
+      "fake": false,
+      "type": "class",
+      "name": "sustainability-topics",
+      "namespace": "",
+      "comb": "&",
+      "styleLess": "height: 350px;",
+      "variants": {},
+      "children": [],
+      "selector": null
+    }, {
+      "_id": "1be5d315-9d43-2366-8458-f064f316e830",
+      "fake": false,
+      "type": "class",
+      "name": "goals-select",
+      "namespace": "",
+      "comb": "",
+      "styleLess": "min-height: 100%; margin-bottom: 0px; padding-top: 8px; padding-right: 2.5em; padding-bottom: 2em; padding-left: 2.5em; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; background-image: linear-gradient(to bottom, white,white); box-shadow: inset 0 35px 21px -19px white, inset 0 -39px 12px -17px white;",
+      "variants": {},
+      "children": ["dea5fb68-bb3e-9cb4-23ec-82848d311ece", "42ced119-947f-92b0-ee0e-0f3b9f043044", "395513b9-ac76-65ea-b533-ae955aae02ad"],
+      "selector": null
+    }, {
+      "_id": "395513b9-ac76-65ea-b533-ae955aae02ad",
+      "fake": false,
+      "type": "class",
+      "name": "sustainability-topics",
+      "namespace": "",
+      "comb": "&",
+      "styleLess": "display: block; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; background-image: none; column-count: 3;",
+      "variants": {
+        "small": {
+          "styleLess": "margin-right: 20px; margin-left: 20px; column-count: 2;"
+        },
+        "tiny": {
+          "styleLess": "margin-right: 0px; margin-left: 0px; column-count: 1;"
+        }
+      },
+      "children": [],
+      "selector": null
+    }, {
+      "_id": "8efa0b8e-f010-b008-9d81-c4f545b107b0",
+      "fake": false,
+      "type": "class",
+      "name": "goals-select-item-wrapper",
+      "namespace": "",
+      "comb": "",
+      "styleLess": "display: inline-block; width: 100%; margin-top: 12px; margin-right: 0px; padding-right: 15px;",
+      "variants": {
+        "medium": {
+          "styleLess": "display: inline-block; margin-top: 12px;"
+        }
+      },
+      "children": [],
+      "selector": null
+    }, {
+      "_id": "6edd9f2c-2ab3-0d7e-3ca5-c9d03dbcd98b",
+      "fake": false,
+      "type": "class",
+      "name": "goals-select-item",
+      "namespace": "",
+      "comb": "",
+      "styleLess": "display: inline; margin-bottom: 3px; padding-bottom: 3px; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: transparent; font-family: Lato; color: #192a41; font-size: 16px; line-height: 20px; font-weight: 400; text-decoration: none;",
+      "variants": {
+        "main_active": {
+          "styleLess": "border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #27b5e0; color: #27b5e0;"
+        }
+      },
+      "children": ["20afaaa0-2020-5b2a-c0ea-83ac8957b4e0"],
+      "selector": null
+    }, {
+      "_id": "20afaaa0-2020-5b2a-c0ea-83ac8957b4e0",
+      "fake": false,
+      "type": "class",
+      "name": "select-item-goal",
+      "namespace": "",
+      "comb": "&",
+      "styleLess": "opacity: 0.36;",
+      "variants": {
+        "main_active": {
+          "styleLess": "opacity: 1;"
+        }
+      },
+      "children": [],
+      "selector": null
+    }],
+    "assets": [],
+    "ix1": [],
+    "ix2": {
+      "interactions": [],
+      "events": [],
+      "actionLists": []
+    }
+  },
+  "meta": {
+    "unlinkedSymbolCount": 0,
+    "droppedLinks": 0,
+    "dynBindRemovedCount": 0,
+    "dynListBindRemovedCount": 0
+  }
+}
