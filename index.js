@@ -39,6 +39,10 @@ module.exports = function (opts) {
       next(context, context.toString());
     }),
     'head_scripts': osmosis.find('head script').then(function (context, data, next) {
+      if (/use\.typekit/i.test(context.getAttribute('src'))) {
+        context.remove();
+      }
+      
       next(context, context.toString());
     }),
     'script': osmosis.find('script[src^="https://uploads-ssl.webflow.com"]').config({ parse: false }).get(function (context) {
@@ -51,7 +55,6 @@ module.exports = function (opts) {
     return opts.pages.shift();
   }, opts.pages.length)
   .then(function (document) {
-    document.find('[src^="https://use.typekit.net"]').remove();
     document.get('[src="https://code.jquery.com/jquery-3.3.1.min.js"]').setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
   })
   .set({
