@@ -51,6 +51,7 @@ module.exports = function (opts) {
     return opts.pages.shift();
   }, opts.pages.length)
   .then(function (document) {
+    document.find('[src^="https://use.typekit.net"]').remove();
     document.get('[src="https://code.jquery.com/jquery-3.3.1.min.js"]').setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
   })
   .set({
