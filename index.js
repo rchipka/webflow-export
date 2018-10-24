@@ -42,7 +42,7 @@ module.exports = function (opts) {
       if (/use\.typekit/i.test(context.getAttribute('src'))) {
         context.remove();
       }
-      
+
       next(context, context.toString());
     }),
     'script': osmosis.find('script[src^="https://uploads-ssl.webflow.com"]').config({ parse: false }).get(function (context) {
@@ -87,6 +87,8 @@ module.exports = function (opts) {
         $ = window.jQuery;
 
     $('[data-exclude]').remove();
+
+    $('span[aria-hidden="true"]').remove();
 
     $('.webflow-page-label').remove();
 
