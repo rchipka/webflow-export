@@ -320,6 +320,9 @@ module.exports = function (opts) {
             .replace(/\s+\}\}/g, '}}')
             .replace(/&amp;lt;\?php\s.+?\s\?&amp;gt;\s*($|<)/g, function (str) {
               return entities.decodeHTML(entities.decodeHTML(str));
+            })
+            .replace(/&lt;?php.+?\s\?&gt;/g, function (str) {
+              return decodeURIComponent(str);
             });
       // console.log(c.html);
       // delete c.node;
