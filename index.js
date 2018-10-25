@@ -328,6 +328,11 @@ module.exports = function (opts) {
             .replace(/&lt;\?php.+?\?&gt;/g, function (str) {
               return decodeURIComponent(entities.decodeHTML(str));
             });
+
+
+      if (opts.processHTML instanceof Function) {
+        c.html = opts.processHTML(c.html, c);
+      }
       // console.log(c.html);
       // delete c.node;
     });
