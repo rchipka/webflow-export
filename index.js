@@ -90,8 +90,6 @@ module.exports = function (opts) {
       opts.preprocess(document, $, data);
     }
 
-    $('[data-exclude]').remove();
-
     $('span[aria-hidden="true"]').remove();
 
     $('.webflow-page-label').remove();
@@ -298,6 +296,8 @@ module.exports = function (opts) {
 
       node.removeAttribute('replace');
     });
+
+    $('[data-exclude]').remove();
 
     data.elements.forEach(function (c) {
       var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute(opts.contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
