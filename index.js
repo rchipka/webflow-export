@@ -86,6 +86,10 @@ module.exports = function (opts) {
     var window = document.defaultView,
         $ = window.jQuery;
 
+    if (opts.preprocess instanceof Function) {
+      opts.preprocess(document, $, data);
+    }
+
     $('[data-exclude]').remove();
 
     $('span[aria-hidden="true"]').remove();
