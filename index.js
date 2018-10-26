@@ -4,8 +4,7 @@ const css = require('css');
 const fs = require('fs-extra'),
       path = require('path'),
       entities = require('entities'),
-      url = require('url'),
-      CleanCSS = require('clean-css');
+      url = require('url');
 
 require('sugar')();
 
@@ -54,6 +53,9 @@ module.exports = function (opts) {
       next(context, context.toString());
     }),
   })
+  .then(function (context, data) {
+    globalStyles = css.parse(data.styles);
+  })
   .paginate(function () {
     return opts.pages.shift();
   }, opts.pages.length)
@@ -85,7 +87,7 @@ module.exports = function (opts) {
     })],
   })
   .click('body')
-  .then(function (document, data) {
+  .then(function (document, data, next) {
     var window = document.defaultView,
         $ = window.jQuery;
 
@@ -162,14 +164,7 @@ module.exports = function (opts) {
       }
     });
 
-    globalStyles = (new CleanCSS({
-        level: 1,
-        format: 'beautify',
-      })).minify(globalStyles += data.styles).styles;
-
-    var styles = css.parse(globalStyles);
-
-    var rules = styles.stylesheet.rules.filter({type:'media'}).map(function (v) {
+    var rules = globalStyles.stylesheet.rules.filter({type:'media'}).map(function (v) {
       if (!v.rules) {
         return null;
       }
@@ -181,7 +176,7 @@ module.exports = function (opts) {
       return v.rules;
     });
 
-    rules.push(styles.stylesheet.rules);
+    rules.push(globalStyles.stylesheet.rules);
 
     rules.forEach(function (rules, ruleIndex) {
       if (!rules) {
@@ -271,18 +266,8 @@ module.exports = function (opts) {
             })
           }
         }
-
-        rule.selectors.forEach(function (selector, i) {
-          if (!/\.w-root\b/.test(selector)) {
-            rule.selectors[i] = '.w-root ' + selector;
-          }
-        });
-
-        rule.selectors = rule.selectors.unique();
       });
     });
-
-    globalStyles = data.styles = css.stringify(styles);
 
     // console.log(data.styles);
 
@@ -382,6 +367,8 @@ module.exports = function (opts) {
     });
 
     delete data.node;
+
+    next(document, data);
   })
   .data(function (data) {
     if (!globalData) {
@@ -389,12 +376,44 @@ module.exports = function (opts) {
     }
 
     globalData.elements.append(data.elements);
-    globalData.styles = (new CleanCSS({
-        level: 1,
-        format: 'beautify',
-      })).minify(globalStyles).styles;
   })
   .done(function () {
+    var rules = globalStyles.stylesheet.rules.filter({type:'media'}).map(function (v) {
+      if (!v.rules) {
+        return null;
+      }
+
+      if (!Array.isArray(v.rules)) {
+        v.rules = [v.rules];
+      }
+
+      return v.rules;
+    });
+
+    rules.push(globalStyles.stylesheet.rules);
+
+    rules.forEach(function (rules, ruleIndex) {
+      if (!rules) {
+        return;
+      }
+
+      rules.forEach(function (rule) {
+        if (!rule.selectors || !rule.declarations) {
+          return;
+        }
+
+        rule.selectors.forEach(function (selector, i) {
+          if (!/\.w-root\b/.test(selector)) {
+            rule.selectors[i] = '.w-root ' + selector;
+          }
+        });
+
+        rule.selectors = rule.selectors.unique();
+      });
+    });
+
+    globalData.styles = css.stringify(globalStyles);
+
     var data = globalData;
 
     console.log('Templated '  + data.elements.length);
