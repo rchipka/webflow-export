@@ -4,7 +4,8 @@ const css = require('css');
 const fs = require('fs-extra'),
       path = require('path'),
       entities = require('entities'),
-      url = require('url');
+      url = require('url')
+      CleanCSS = require('clean-css');
 
 require('sugar')();
 
@@ -24,6 +25,8 @@ module.exports = function (opts) {
   if (!opts.contextAttr) {
     opts.contextAttr = 'class';
   }
+
+  var globalStyles = '';
 
   var globalData = null;
 
@@ -159,7 +162,9 @@ module.exports = function (opts) {
       }
     });
 
-    var styles = css.parse(data.styles);
+    globalStyles += data.styles;
+
+    var styles = css.parse(globalStyles);
 
     var rules = styles.stylesheet.rules.filter({type:'media'}).map(function (v) {
       if (!v.rules) {
@@ -226,6 +231,42 @@ module.exports = function (opts) {
               });
             }
           });
+
+          if (!/^(\.w-|[^\.])/.test(selector)) {
+            nodes.filter(function (node) {
+              return node.getAttribute('style-context');
+            }).forEach(function (node) {
+              var style_context = [node.getAttribute('style-context')],
+                  parent = node, last_had_style_context = true;
+
+              while (parent.parent && (parent = parent.parent())) {
+                if (parent.getAttribute && parent.getAttribute('style-context')) {
+                  if (last_had_style_context) {
+                    style_context.push('>');
+                  } else {
+                    last_had_style_context = true;
+                  }
+
+                  style_context.push(parent.getAttribute('style-context'));
+                } else {
+                  last_had_style_context = false;
+                }
+              }
+
+              style_context = style_context.compact(true).reverse().join(' ').trim().replace(/^[>~\+]+/, '');
+              
+              console.log('\n');
+              console.log('Copying styles from ' + JSON.stringify(selector) + ' to ' + JSON.stringify(style_context));
+              console.log(rule.declarations.map(function (d) {
+                return '\t' + [d.property, d.value].join(': ');
+              }).join('\n'));
+              console.log('\n');
+
+              if (style_context) {
+                rule.selectors.push(style_context);
+              }
+            })
+          }
         }
 
         rule.selectors.forEach(function (selector, i) {
@@ -238,7 +279,7 @@ module.exports = function (opts) {
       });
     });
 
-    data.styles = css.stringify(styles);
+    globalStyles = data.styles = css.stringify(styles);
 
     // console.log(data.styles);
 
@@ -345,6 +386,9 @@ module.exports = function (opts) {
     }
 
     globalData.elements.append(data.elements);
+    globalData.styles = new CleanCSS({
+      format: 'beautify',
+    }).minify(globalStyles);
   })
   .done(function () {
     var data = globalData;
