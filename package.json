@@ -1,12 +1,13 @@
 {
   "name": "webflow-export",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "description": "Export webflow elements and styles",
   "main": "index.js",
   "scripts": {},
   "author": "",
   "devDependencies": {},
   "dependencies": {
+    "clean-css": "^4.2.1",
     "css": "^2.2.3",
     "entities": "^1.1.1",
     "fs-extra": "^6.0.1",
