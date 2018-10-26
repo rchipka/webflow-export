@@ -4,7 +4,7 @@ const css = require('css');
 const fs = require('fs-extra'),
       path = require('path'),
       entities = require('entities'),
-      url = require('url')
+      url = require('url'),
       CleanCSS = require('clean-css');
 
 require('sugar')();
