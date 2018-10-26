@@ -162,7 +162,10 @@ module.exports = function (opts) {
       }
     });
 
-    globalStyles += data.styles;
+    globalStyles = (new CleanCSS({
+        level: 1,
+        format: 'beautify',
+      })).minify(globalStyles += data.styles).styles;
 
     var styles = css.parse(globalStyles);
 
@@ -386,9 +389,10 @@ module.exports = function (opts) {
     }
 
     globalData.elements.append(data.elements);
-    globalData.styles = new CleanCSS({
-      format: 'beautify',
-    }).minify(globalStyles);
+    globalData.styles = (new CleanCSS({
+        level: 1,
+        format: 'beautify',
+      })).minify(globalStyles).styles;
   })
   .done(function () {
     var data = globalData;
