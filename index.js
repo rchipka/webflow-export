@@ -338,6 +338,8 @@ module.exports = function (opts) {
       // }
 
       c.node.remove();
+
+      $(c.node).find('[data-exclude]').remove();
     });
 
 
