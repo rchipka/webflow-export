@@ -310,6 +310,17 @@ module.exports = function (opts) {
       node.removeAttribute('php-content');
     });
 
+
+    document.find('[php-inner-block]').forEach(function (node) {
+      var value = node.getAttribute('php-inner-block');
+
+      node.addChild(document.createTextNode('<?php } ?>'));
+      node.children[0].addPrevSibling(document.createTextNode('<?php ' + value + ' { ?>'));
+
+      node.setAttribute('php-inner-block', '');
+      node.removeAttribute('php-inner-block');
+    });
+
     document.find('[php-exclude]').forEach(function (node) {
       node.children.forEach(function (c) {
         c.remove();
