@@ -25,6 +25,10 @@ module.exports = function (opts) {
     opts.contextAttr = 'class';
   }
 
+  if (!opts.hasOwnProperty('selectorPrefix')) {
+    opts.selectorPrefix = 'w-root';
+  }
+
   var globalStyles = '';
 
   var globalData = null;
@@ -394,25 +398,29 @@ module.exports = function (opts) {
 
     rules.push(globalStyles.stylesheet.rules);
 
-    rules.forEach(function (rules, ruleIndex) {
-      if (!rules) {
-        return;
-      }
+    if (opts.selectorPrefix) {
+      var selectorPrefixRegex = new RegExp('\\.' + selectorPrefix + '\\b');
 
-      rules.forEach(function (rule) {
-        if (!rule.selectors || !rule.declarations) {
+      rules.forEach(function (rules, ruleIndex) {
+        if (!rules) {
           return;
         }
 
-        rule.selectors.forEach(function (selector, i) {
-          if (!/\.w-root\b/.test(selector)) {
-            rule.selectors[i] = '.w-root ' + selector;
+        rules.forEach(function (rule) {
+          if (!rule.selectors || !rule.declarations) {
+            return;
           }
-        });
 
-        rule.selectors = rule.selectors.unique();
+          rule.selectors.forEach(function (selector, i) {
+            if (!selectorPrefixRegex.test(selector)) {
+              rule.selectors[i] = '.' + opts.selectorPrefix + ' ' + selector;
+            }
+          });
+
+          rule.selectors = rule.selectors.unique();
+        });
       });
-    });
+    }
 
     globalData.styles = css.stringify(globalStyles);
 
