@@ -399,7 +399,7 @@ module.exports = function (opts) {
     rules.push(globalStyles.stylesheet.rules);
 
     if (opts.selectorPrefix) {
-      var selectorPrefixRegex = new RegExp('\\.' + selectorPrefix + '\\b');
+      var selectorPrefixRegex = new RegExp('\\.' + opts.selectorPrefix + '\\b');
 
       rules.forEach(function (rules, ruleIndex) {
         if (!rules) {
