@@ -321,13 +321,16 @@ module.exports = function (opts) {
       node.removeAttribute('php-inner-block');
     });
 
-    document.find('[php-exclude]').forEach(function (node) {
-      node.children.forEach(function (c) {
-        c.remove();
-        node.addNextSibling(c);
-      });
 
-      node.remove();
+    data.elements.forEach(function (el) {
+      $(el.node).find('[php-exclude]').forEach(function (node) {
+        node.children.forEach(function (c) {
+          c.remove();
+          node.addNextSibling(c);
+        });
+
+        node.remove();
+      });
     });
 
     document.find('[replace]').forEach(function (node) {
