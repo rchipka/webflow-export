@@ -1,6 +1,6 @@
 {
   "name": "webflow-export",
-  "version": "0.3.22",
+  "version": "0.3.23",
   "description": "Export webflow elements and styles",
   "main": "index.js",
   "scripts": {},
