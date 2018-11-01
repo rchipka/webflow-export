@@ -434,11 +434,23 @@ module.exports = function (opts) {
               rule.selectors[i] = '.' + opts.selectorPrefix + ' ' + selector;
             }
           });
-
-          rule.selectors = rule.selectors.unique();
         });
       });
     }
+
+    rules.forEach(function (rules, ruleIndex) {
+      if (!rules) {
+        return;
+      }
+
+      rules.forEach(function (rule) {
+        if (!rule.selectors || !rule.declarations) {
+          return;
+        }
+
+        rule.selectors = rule.selectors.unique();
+      });
+    });
 
     globalData.styles = css.stringify(globalStyles);
 
