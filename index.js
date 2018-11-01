@@ -323,7 +323,7 @@ module.exports = function (opts) {
 
 
     data.elements.forEach(function (el) {
-      $(el.node).find('[php-exclude]').forEach(function (node) {
+      $(el.node).find('[php-exclude]').toArray().forEach(function (node) {
         node.children.forEach(function (c) {
           c.remove();
           node.addNextSibling(c);
