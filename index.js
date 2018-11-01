@@ -4,7 +4,8 @@ const css = require('css');
 const fs = require('fs-extra'),
       path = require('path'),
       entities = require('entities'),
-      url = require('url');
+      url = require('url'),
+      htmlBeautify = require("js-beautify").html;
 
 require('sugar')();
 
@@ -287,16 +288,6 @@ module.exports = function (opts) {
       node.removeAttribute('if');
     });
 
-    document.find('[php-block]').forEach(function (node) {
-      var condition = node.getAttribute('php-block');
-
-      node.addPrevSibling(document.createTextNode('<?php ' + condition + ' { ?>'));
-      node.addNextSibling(document.createTextNode('<?php } ?>'));
-
-      node.setAttribute('php-block', '');
-      node.removeAttribute('php-block');
-    });
-
     document.find('[php-content]').forEach(function (node) {
       var value = node.getAttribute('php-content');
 
@@ -311,22 +302,31 @@ module.exports = function (opts) {
     });
 
 
-    document.find('[php-inner-block]').forEach(function (node) {
-      var value = node.getAttribute('php-inner-block');
-
-      node.addChild(document.createTextNode('<?php } ?>'));
-      node.children[0].addPrevSibling(document.createTextNode('<?php ' + value + ' { ?>'));
-
-      node.setAttribute('php-inner-block', '');
-      node.removeAttribute('php-inner-block');
-    });
-
-
     data.elements.forEach(function (el) {
+      $(el.node).find('[php-block], [php-outer-block]').toArray().forEach(function (node) {
+        var condition = node.getAttribute('php-block');
+
+        node.addPrevSibling(document.createTextNode('<?php ' + condition + ' { ?>'));
+        node.addNextSibling(document.createTextNode('<?php } ?>'));
+
+        node.setAttribute('php-block', '');
+        node.removeAttribute('php-block');
+      });
+
+      $(el.node).find('[php-inner-block]').toArray().forEach(function (node) {
+        var value = node.getAttribute('php-inner-block');
+
+        node.addChild(document.createTextNode('<?php } ?>'));
+        node.children[0].addPrevSibling(document.createTextNode('<?php ' + value + ' { ?>'));
+
+        node.setAttribute('php-inner-block', '');
+        node.removeAttribute('php-inner-block');
+      });
+
       $(el.node).find('[php-exclude]').toArray().forEach(function (node) {
         node.children.forEach(function (c) {
           c.remove();
-          node.addNextSibling(c);
+          node.addPrevSibling(c);
         });
 
         node.remove();
@@ -361,6 +361,8 @@ module.exports = function (opts) {
     });
 
 
+
+
     data.elements.forEach(function (c) {
       if (c.node.nodeName.toLowerCase() === 'body') {
         c.html = c.node.innerHTML;
@@ -382,6 +384,8 @@ module.exports = function (opts) {
       if (opts.processHTML instanceof Function) {
         c.html = opts.processHTML(c.html, c);
       }
+
+      c.html = htmlBeautify(c.html);
       // console.log(c.html);
       // delete c.node;
     });
