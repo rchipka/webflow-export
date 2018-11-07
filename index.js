@@ -258,12 +258,14 @@ module.exports = function (opts) {
 
               style_context = style_context.compact(true).reverse().join(' ').trim().replace(/^[>~\+]+/, '');
               
-              console.log('\n');
-              console.log('Copying styles from ' + JSON.stringify(selector) + ' to ' + JSON.stringify(style_context));
-              console.log(rule.declarations.map(function (d) {
-                return '\t' + [d.property, d.value].join(': ');
-              }).join('\n'));
-              console.log('\n');
+              if (selectors.indexOf(style_context) === -1) {
+                console.log('\n');
+                console.log('Adding selector ' + JSON.stringify(style_context) + ' to \n' + selector + ' {');
+                console.log(rule.declarations.map(function (d) {
+                  return '\t' + [d.property, d.value].join(': ');
+                }).join('\n'));
+                console.log('}\n');
+              }
 
               if (style_context) {
                 rule.selectors.push(style_context);
