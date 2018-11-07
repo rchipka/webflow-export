@@ -258,7 +258,7 @@ module.exports = function (opts) {
 
               style_context = style_context.compact(true).reverse().join(' ').trim().replace(/^[>~\+]+/, '');
               
-              if (selectors.indexOf(style_context) === -1) {
+              if (rule.selectors.indexOf(style_context) === -1) {
                 console.log('\n');
                 console.log('Adding selector ' + JSON.stringify(style_context) + ' to \n' + selector + ' {');
                 console.log(rule.declarations.map(function (d) {
