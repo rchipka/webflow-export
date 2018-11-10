@@ -6,6 +6,7 @@ _webflow.getStoreStateByName("PublishDropdownUIStore").domains.filter(function(a
 }).toArray();
 _webflow.creators.PageActions.syncPage(_webflow.state.PageStore.get('staticPages').get("5b3fe37ce9a78872d03f1367"))
 _webflow.creators.PageActions.savePage({ payload: { _id: '5b3fe387e9a78853643f136b' } })
+_webflow.creators.PageActions.switchPage({ id: '5be4c076bc410128a0d16d13' })
 _webflow.creators.ExportActionCreators.opened()
 
 _webflow.dispatch({ type: 'SITE_PUBLISHED', data: { site: _webflow.stores.SiteDataStore.state.toJSON() } });
