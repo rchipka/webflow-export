@@ -1,6 +1,6 @@
 {
   "name": "webflow-export",
-  "version": "0.3.29",
+  "version": "0.3.30",
   "description": "Export webflow elements and styles",
   "main": "index.js",
   "scripts": {},
@@ -12,6 +12,7 @@
     "fs-extra": "^6.0.1",
     "js-beautify": "^1.8.8",
     "osmosis": "^1.1.7",
-    "sugar": "^2.0.4"
+    "sugar": "^2.0.4",
+    "css-specificity": "^0.1.0"
   }
 }

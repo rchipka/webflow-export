@@ -5,7 +5,8 @@ const fs = require('fs-extra'),
       path = require('path'),
       entities = require('entities'),
       url = require('url'),
-      htmlBeautify = require("js-beautify").html;
+      htmlBeautify = require("js-beautify").html,
+      specificity = require('css-specificity');
 
 require('sugar')();
 
@@ -29,6 +30,8 @@ module.exports = function (opts) {
   if (!opts.hasOwnProperty('selectorPrefix')) {
     opts.selectorPrefix = 'w-root';
   }
+
+  var style_contexts = {};
 
   var globalStyles = '';
 
@@ -178,6 +181,10 @@ module.exports = function (opts) {
         v.rules = [v.rules];
       }
 
+      v.rules.forEach(function (r) {
+        r.parent = v;
+      });
+
       return v.rules;
     });
 
@@ -268,7 +275,11 @@ module.exports = function (opts) {
               }
 
               if (style_context) {
-                rule.selectors.push('#wf-temp ' + style_context);
+                if (!style_contexts[style_context]) {
+                  style_contexts[style_context] = [];
+                }
+
+                style_contexts[style_context].push(Object.clone(rule));
               }
             })
           }
@@ -404,6 +415,22 @@ module.exports = function (opts) {
     globalData.elements.append(data.elements);
   })
   .done(function () {
+    Object.keys(style_contexts).forEach(function (context_selector) {
+      style_contexts[context_selector].sortBy(function (rule) {
+        return rule.selectors.max(function (selector) {
+          return specificity.calculate(selector).map('specificityArray').flatten().sum();
+        });
+      }).forEach(function (rule) {
+        var stylesheet = rule.parent || globalStyles.stylesheet;
+
+        if (!Array.isArray(stylesheet.rules)) {
+          stylesheet.rules = [stylesheet.rules].compact();
+        }
+
+        stylesheet.rules.push(rule);
+      });
+    });
+
     var rules = globalStyles.stylesheet.rules.filter({type:'media'}).map(function (v) {
       if (!v.rules) {
         return null;
@@ -450,9 +477,7 @@ module.exports = function (opts) {
           return;
         }
 
-        rule.selectors = rule.selectors.unique().map(function (s) {
-          return s.replace(/#wf-temp /g, '');
-        });
+        rule.selectors = rule.selectors.unique();
       });
     });
 
