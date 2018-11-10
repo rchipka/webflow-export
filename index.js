@@ -268,7 +268,7 @@ module.exports = function (opts) {
               }
 
               if (style_context) {
-                rule.selectors.push(style_context);
+                rule.selectors.push('#wf-temp ' + style_context);
               }
             })
           }
@@ -450,7 +450,9 @@ module.exports = function (opts) {
           return;
         }
 
-        rule.selectors = rule.selectors.unique();
+        rule.selectors = rule.selectors.unique().map(function (s) {
+          return s.replace(/#wf-temp /g, '');
+        });
       });
     });
 
