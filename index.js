@@ -182,7 +182,7 @@ module.exports = function (opts) {
       }
 
       v.rules.forEach(function (r) {
-        r.parent = v;
+        r.mediaParent = v;
       });
 
       return v.rules;
@@ -416,16 +416,20 @@ module.exports = function (opts) {
   })
   .done(function () {
     Object.keys(style_contexts).forEach(function (context_selector) {
-      style_contexts[context_selector].sortBy(function (rule) {
+      style_contexts[context_selector].unique(function (rule) {
+        return rule.selectors.join(', ');
+      }).sortBy(function (rule) {
         return rule.selectors.max(function (selector) {
-          return specificity.calculate(selector).map('specificityArray').flatten().sum();
+          return specificity.calc(selector).map('specificity').flatten().sum();
         });
       }).forEach(function (rule) {
-        var stylesheet = rule.parent || globalStyles.stylesheet;
+        var stylesheet = rule.mediaParent || globalStyles.stylesheet;
 
         if (!Array.isArray(stylesheet.rules)) {
           stylesheet.rules = [stylesheet.rules].compact();
         }
+
+        rule.selectors = [context_selector];
 
         stylesheet.rules.push(rule);
       });
@@ -485,7 +489,7 @@ module.exports = function (opts) {
 
     var data = globalData;
 
-    console.log('Templated '  + data.elements.length);
+    console.log('\n\nTemplated '  + data.elements.length);
 
     if (typeof opts.json === 'string') {
       fs.writeJsonSync(path.resolve(opts.base, opts.json), data.elements);
