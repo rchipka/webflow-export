@@ -253,6 +253,10 @@ module.exports = function (opts) {
 
               while (parent.parent && (parent = parent.parent())) {
                 if (parent.getAttribute && parent.getAttribute('style-context')) {
+                  if (!opts.directChildTargeting) {
+                    last_had_style_context = false;
+                  }
+
                   if (last_had_style_context) {
                     style_context.push('>');
                   } else {
