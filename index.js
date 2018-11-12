@@ -10,6 +10,8 @@ const fs = require('fs-extra'),
 
 require('sugar')();
 
+// var util = require('util');
+
 var osmosis = require('osmosis');
 
 module.exports = function (opts) {
@@ -237,7 +239,7 @@ module.exports = function (opts) {
                   return;
                 }
 
-                n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + d.value.replace(/url\(([^\)]*)\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
+                n.setAttribute('style', [n.getAttribute('style'), 'background-image: ' + d.value.replace(/url\(".+?"\)/g, 'url(\'' + url + '\')')].compact(true).join(';'));
               });
             }
           });
@@ -416,22 +418,30 @@ module.exports = function (opts) {
   })
   .done(function () {
     Object.keys(style_contexts).forEach(function (context_selector) {
-      style_contexts[context_selector].unique(function (rule) {
-        return rule.selectors.join(', ');
+      (style_contexts[context_selector] = style_contexts[context_selector].unique(function (rule) {
+        return [rule.mediaParent ? rule.mediaParent.media : '', rule.selectors.join(', '), rule.declarations.map(function (d) {
+                  return '\t' + [d.property, d.value].join(': ');
+                }).join('\n')].join(' ');
       }).sortBy(function (rule) {
         return rule.selectors.max(function (selector) {
           return specificity.calc(selector).map('specificity').flatten().sum();
-        });
-      }).forEach(function (rule) {
-        var stylesheet = rule.mediaParent || globalStyles.stylesheet;
-
-        if (!Array.isArray(stylesheet.rules)) {
-          stylesheet.rules = [stylesheet.rules].compact();
-        }
+        }) + (rule.mediaParent ? 10 : 0);
+      })).forEach(function (rule) {
+        // if (!Array.isArray(stylesheet.rules)) {
+        //   stylesheet.rules = [stylesheet.rules].compact();
+        // }
 
         rule.selectors = [context_selector];
 
-        stylesheet.rules.push(rule);
+        if (rule.mediaParent) {
+          var mediaParent = Object.clone(rule.mediaParent);
+
+          mediaParent.rules = [ rule ];
+
+          rule = mediaParent;
+        }
+
+        globalStyles.stylesheet.rules.push(rule);
       });
     });
 
@@ -477,6 +487,8 @@ module.exports = function (opts) {
       }
 
       rules.forEach(function (rule) {
+        delete rule.mediaParent;
+
         if (!rule.selectors || !rule.declarations) {
           return;
         }
