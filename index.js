@@ -39,7 +39,7 @@ module.exports = function (opts) {
 
   var globalData = null;
 
-  osmosis.get(url.resolve(opts.url, opts.pages.shift())).set({
+  osmosis.config('ignore_http_errors', true).get(url.resolve(opts.url, opts.pages.shift())).set({
     'favicon': osmosis.find('link[rel="shortcut icon"]:first').config({ parse: false }).get(function (context) {
       return context.getAttribute('href');
     }).then(function (context, data, next) {
