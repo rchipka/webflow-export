@@ -203,17 +203,22 @@ module.exports = function (opts) {
           return;
         }
 
-        rule.selectors.forEach(function (selector) {
+        rule.selectors.clone().forEach(function (selector, index) {
+          var stateString = '',
+              searchSelector = selector;
+
           ['active', 'hover', 'visited', 'target', 'focus'].forEach(function (state) {
             var regexp = new RegExp(':' + state, 'g');
 
             if (regexp.test(selector)) {
+              stateString = ':' + state;
+
+              searchSelector = searchSelector.replace(regexp, '');
+
               rule.selectors.push(selector.replace(regexp, '.w-' + state));
             }
           });
-        });
 
-        rule.selectors.compact(true).forEach(function (selector) {
           if (/-webkit|-moz/.test(selector)) {
             return;
           }
@@ -224,7 +229,7 @@ module.exports = function (opts) {
           }
 
           try {
-            var nodes = document.find(selector);
+            var nodes = document.find(searchSelector);
           } catch (e) {
             // console.error(e);
           }
@@ -232,12 +237,6 @@ module.exports = function (opts) {
           if (!nodes) {
             return;
           }
-
-          var state = '';
-
-          selector.replace(/\.w-(active|hover|visited|target|focus)/g, function (str, s) {
-            state = ':' + s;
-          });
 
           rule.declarations.forEach(function (d, i) {
             if (d.property == 'background-image' && d.value.indexOf('url(') !== -1) {
@@ -253,51 +252,53 @@ module.exports = function (opts) {
             }
           });
 
-          if (!/^(\.w-|[^\.])/.test(selector)) {
-            nodes.filter(function (node) {
-              return node.getAttribute('style-context');
-            }).forEach(function (node) {
-              var style_context = [node.getAttribute('style-context')],
-                  parent = node, last_had_style_context = true;
+          if (/^(\.w-|[^\.])/.test(selector)) {
+            return;
+          }
 
-              while (parent.parent && (parent = parent.parent())) {
-                if (parent.getAttribute && parent.getAttribute('style-context')) {
-                  if (!opts.directChildTargeting) {
-                    last_had_style_context = false;
-                  }
+          nodes.filter(function (node) {
+            return node.getAttribute('style-context');
+          }).forEach(function (node) {
+            var style_context = [node.getAttribute('style-context')],
+                parent = node, last_had_style_context = true;
 
-                  if (last_had_style_context) {
-                    style_context.push('>');
-                  } else {
-                    last_had_style_context = true;
-                  }
-
-                  style_context.push(parent.getAttribute('style-context'));
-                } else {
+            while (parent.parent && (parent = parent.parent())) {
+              if (parent.getAttribute && parent.getAttribute('style-context')) {
+                if (!opts.directChildTargeting) {
                   last_had_style_context = false;
                 }
-              }
 
-              style_context = style_context.compact(true).reverse().append(selector).join(' ').trim().replace(/^[>~\+]+/, '');
-              
-              if (rule.selectors.indexOf(style_context) === -1) {
-                console.log('\n');
-                console.log('Adding selector ' + JSON.stringify(style_context) + ' to \n' + selector + ' {');
-                console.log(rule.declarations.map(function (d) {
-                  return '\t' + [d.property, d.value].join(': ');
-                }).join('\n'));
-                console.log('}\n');
-              }
-
-              if (style_context) {
-                if (!style_contexts[style_context]) {
-                  style_contexts[style_context] = [];
+                if (last_had_style_context) {
+                  style_context.push('>');
+                } else {
+                  last_had_style_context = true;
                 }
 
-                style_contexts[style_context].push(Object.clone(rule));
+                style_context.push(parent.getAttribute('style-context'));
+              } else {
+                last_had_style_context = false;
               }
-            });
-          }
+            }
+
+            style_context = style_context.compact(true).reverse().join(' ').trim().replace(/^[>~\+]+/, '') + stateString;
+            
+            if (rule.selectors.indexOf(style_context) === -1) {
+              console.log('\n');
+              console.log('Adding selector ' + JSON.stringify(style_context) + ' to \n' + selector + ' {');
+              console.log(rule.declarations.map(function (d) {
+                return '\t' + [d.property, d.value].join(': ');
+              }).join('\n'));
+              console.log('}\n');
+            }
+
+            if (style_context) {
+              if (!style_contexts[style_context]) {
+                style_contexts[style_context] = [];
+              }
+
+              style_contexts[style_context].push(Object.clone(rule));
+            }
+          });
         });
       });
     });
