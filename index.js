@@ -39,7 +39,7 @@ module.exports = function (opts) {
 
   var globalData = null;
 
-  osmosis.config('ignore_http_errors', true).get(url.resolve(opts.url, opts.pages.shift())).set({
+  osmosis.get(url.resolve(opts.url, opts.pages.shift())).set({
     'favicon': osmosis.find('link[rel="shortcut icon"]:first').config({ parse: false }).get(function (context) {
       return context.getAttribute('href');
     }).then(function (context, data, next) {
@@ -66,6 +66,7 @@ module.exports = function (opts) {
   .then(function (context, data) {
     globalStyles = css.parse(data.styles);
   })
+  .config('ignore_http_errors', true)
   .paginate(function () {
     return opts.pages.shift();
   }, opts.pages.length)
