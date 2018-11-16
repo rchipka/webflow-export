@@ -213,24 +213,32 @@ module.exports = function (opts) {
           });
         });
 
-        var selector = rule.selectors.compact(true).join(', ').trim();
+        rule.selectors.compact(true).forEach(function (selector) {
+          if (/-webkit|-moz/.test(selector)) {
+            return;
+          }
 
-        if (/-webkit|-moz/.test(selector)) {
-          return;
-        }
+          if (!selector) {
+            rules.remove(rule);
+            return;
+          }
 
-        if (!selector) {
-          rules.remove(rule);
-          return;
-        }
+          try {
+            var nodes = document.find(selector);
+          } catch (e) {
+            // console.error(e);
+          }
 
-        try {
-          var nodes = document.find(selector);
-        } catch (e) {
-          // console.error(e);
-        }
+          if (!nodes) {
+            return;
+          }
 
-        if (nodes) {
+          var state = '';
+
+          selector.replace(/\.w-(active|hover|visited|target|focus)/g, function (str, s) {
+            state = ':' + s;
+          });
+
           rule.declarations.forEach(function (d, i) {
             if (d.property == 'background-image' && d.value.indexOf('url(') !== -1) {
               nodes.forEach(function (n) {
@@ -270,7 +278,7 @@ module.exports = function (opts) {
                 }
               }
 
-              style_context = style_context.compact(true).reverse().join(' ').trim().replace(/^[>~\+]+/, '');
+              style_context = style_context.compact(true).reverse().append(selector).join(' ').trim().replace(/^[>~\+]+/, '');
               
               if (rule.selectors.indexOf(style_context) === -1) {
                 console.log('\n');
@@ -288,9 +296,9 @@ module.exports = function (opts) {
 
                 style_contexts[style_context].push(Object.clone(rule));
               }
-            })
+            });
           }
-        }
+        });
       });
     });
 
