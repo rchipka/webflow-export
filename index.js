@@ -432,10 +432,25 @@ module.exports = function (opts) {
   })
   .done(function () {
     Object.keys(style_contexts).forEach(function (context_selector) {
-      (style_contexts[context_selector] = style_contexts[context_selector].unique(function (rule) {
-        return [rule.mediaParent ? rule.mediaParent.media : '', rule.selectors.join(', '), rule.declarations.map(function (d) {
-                  return '\t' + [d.property, d.value].join(': ');
-                }).join('\n')].join(' ');
+      (style_contexts[context_selector] = style_contexts[context_selector].filter(function (rule) {
+        var declarations = mapDeclarations(rule.declarations),
+            selector = rule.selectors.join(', ');
+
+        var has_duplicate = Object.values(style_contexts).flatten().some(function (target_rule) {
+          if (!target_rule.selectors) {
+            return false;
+          }
+
+          if (target_rule === rule) {
+            return false;
+          }
+
+          return (selector.startsWith(target_rule.selectors.join(', ')) && declarations === mapDeclarations(target_rule.declarations));
+        });
+
+        return !has_duplicate;
+      }).unique(function (rule) {
+        return [rule.mediaParent ? rule.mediaParent.media : '', rule.selectors.join(', '), mapDeclarations(rule.declarations)].join(' ');
       }).sortBy(function (rule) {
         return rule.selectors.max(function (selector) {
           return specificity.calc(selector).map('specificity').flatten().sum();
@@ -537,4 +552,10 @@ module.exports = function (opts) {
   })
   .log(console.error)
   .error(console.error);
+}
+
+function mapDeclarations(declarations) {
+  return declarations.map(function (d) {
+                  return '\t' + [d.property, d.value].join(': ');
+                }).join('\n');
 }
