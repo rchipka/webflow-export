@@ -281,26 +281,26 @@ module.exports = function (opts) {
             }
 
             style_context = style_context.compact(true).reverse().join(' ').trim().replace(/^[>~\+]+/, '') + stateString;
-            
-            if (rule.selectors.indexOf(style_context) === -1) {
-              console.log('\n');
-              console.log('Adding selector ' + JSON.stringify(style_context) + ' to \n' + selector + ' {');
-              console.log(rule.declarations.map(function (d) {
-                return '\t' + [d.property, d.value].join(': ');
-              }).join('\n'));
-              console.log('}\n');
-            }
 
             if (style_context) {
               if (!style_contexts[style_context]) {
                 style_contexts[style_context] = [];
               }
 
-              var rule_clone = Object.clone(rule);
+              if (style_contexts[style_context].count(rule) < 1) {
+                console.log('\n');
+                console.log('Adding selector ' + JSON.stringify(style_context) + ' to \n' + selector + ' {');
+                console.log(rule.declarations.map(function (d) {
+                  return '\t' + [d.property, d.value].join(': ');
+                }).join('\n'));
+                console.log('}\n');
 
-              rule_clone.selector = style_context;
+                var rule_clone = Object.clone(rule);
 
-              style_contexts[style_context].push(rule_clone);
+                rule_clone.context_selector = style_context;
+
+                style_contexts[style_context].push(rule_clone);
+              }
             }
           });
         });
@@ -437,27 +437,51 @@ module.exports = function (opts) {
   .done(function () {
     Object.keys(style_contexts).forEach(function (context_selector) {
       (style_contexts[context_selector] = style_contexts[context_selector].filter(function (rule) {
+        if (!rule.context_selector) {
+          return true;
+        }
+
+        if (!rule.selectors) {
+          return true;
+        }
+
         var declarations = mapDeclarations(rule.declarations);
 
-        var has_duplicate = Object.values(style_contexts).flatten().some(function (target_rule) {
-          if (!target_rule.selector) {
+        var has_duplicate = Object.values(style_contexts).flatten().find(function (target_rule) {
+          if (!target_rule.selectors) {
             return false;
           }
 
-          if (target_rule.selector === rule.selector) {
+          if (!target_rule.context_selector) {
             return false;
           }
 
-          return (rule.selector.startsWith(target_rule.selector) && declarations === mapDeclarations(target_rule.declarations));
+          if (target_rule.context_selector == rule.context_selector) {
+            return false;
+          }
+
+          if (rule.context_selector.length < target_rule.context_selector.length) {
+            return false;
+          }
+
+          if (!/^[^\s]+$/.test(rule.context_selector.replace(target_rule.context_selector, ''))) {
+            return false;
+          }
+
+          return (declarations === mapDeclarations(target_rule.declarations));
         });
+
+        if (has_duplicate) {
+          console.log('Removing "' + rule.context_selector + '" as a duplicate of "' + has_duplicate.context_selector + '"');
+        }
 
         return !has_duplicate;
       }).unique(function (rule) {
         return [rule.mediaParent ? rule.mediaParent.media : '', rule.selectors.join(', '), mapDeclarations(rule.declarations)].join(' ');
       }).sortBy(function (rule) {
-        return rule.selectors.max(function (selector) {
+        return rule.selectors.map(function (selector) {
           return specificity.calc(selector).map('specificity').flatten().sum();
-        }) + (rule.mediaParent ? 10 : 0);
+        }).max() + (rule.mediaParent ? 10 : 0);
       })).forEach(function (rule) {
         // if (!Array.isArray(stylesheet.rules)) {
         //   stylesheet.rules = [stylesheet.rules].compact();
