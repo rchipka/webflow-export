@@ -296,7 +296,11 @@ module.exports = function (opts) {
                 style_contexts[style_context] = [];
               }
 
-              style_contexts[style_context].push(Object.clone(rule));
+              var rule_clone = Object.clone(rule);
+
+              rule_clone.selector = style_context;
+
+              style_contexts[style_context].push(rule_clone);
             }
           });
         });
@@ -433,19 +437,18 @@ module.exports = function (opts) {
   .done(function () {
     Object.keys(style_contexts).forEach(function (context_selector) {
       (style_contexts[context_selector] = style_contexts[context_selector].filter(function (rule) {
-        var declarations = mapDeclarations(rule.declarations),
-            selector = rule.selectors.join(', ');
+        var declarations = mapDeclarations(rule.declarations);
 
         var has_duplicate = Object.values(style_contexts).flatten().some(function (target_rule) {
-          if (!target_rule.selectors) {
+          if (!target_rule.selector) {
             return false;
           }
 
-          if (target_rule === rule) {
+          if (target_rule.selector === rule.selector) {
             return false;
           }
 
-          return (selector.startsWith(target_rule.selectors.join(', ')) && declarations === mapDeclarations(target_rule.declarations));
+          return (rule.selector.startsWith(target_rule.selector) && declarations === mapDeclarations(target_rule.declarations));
         });
 
         return !has_duplicate;
