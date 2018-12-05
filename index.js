@@ -71,7 +71,11 @@ module.exports = function (opts) {
     return opts.pages.shift();
   }, opts.pages.length)
   .then(function (document) {
-    document.get('[src="https://code.jquery.com/jquery-3.3.1.min.js"]').setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
+    var jQuery = document.get('[src="https://code.jquery.com/jquery-3.3.1.min.js"]')
+
+    if (jQuery) {
+      jQuery.setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
+    }
   })
   .set({
     // 'fields': ['@data-field'],
