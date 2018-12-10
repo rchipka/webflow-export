@@ -29,6 +29,10 @@ module.exports = function (opts) {
     opts.contextAttr = 'class';
   }
 
+  if (!opts.slotAttr) {
+    opts.slotAttr = 'data-wf-slot';
+  }
+
   if (!opts.hasOwnProperty('selectorPrefix')) {
     opts.selectorPrefix = 'w-root';
   }
@@ -384,12 +388,26 @@ module.exports = function (opts) {
     $('[data-exclude]').remove();
 
     data.elements.forEach(function (c) {
-      var text = document.createTextNode('{{ webflow_render(' + JSON.stringify(c.node.getAttribute(opts.contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}');
+      var text = '';
+
+      if (opts.slotAttr && c.node.hasAttribute(opts.slotAttr)) {
+        c.slot = c.node.getAttribute(opts.slotAttr).replace(/\s+/g, '').trim();
+        text = '{{ webflow_slot(' + JSON.stringify(c.slot).replace(/"/g, '\'') + ') }}';
+        c.node.setAttribute(opts.slotAttr, '');
+        c.node.removeAttribute(opts.slotAttr);
+      } else {
+        text = '{{ webflow_render(' + JSON.stringify(c.node.getAttribute(opts.contextAttr).split(/\s+/)).replace(/"/g, '\'') + ', _context) }}';
+      }
+
+      c.node.setAttribute(opts.contextAttr, '');
+      c.node.removeAttribute(opts.contextAttr);
+
+      var textNode = document.createTextNode(text);
 
       // if (c.node.parentNode) {
       //   c.node.parentNode.addChild(text);
       // } else {
-        c.node.addNextSibling(text);
+        c.node.addNextSibling(textNode);
       // }
 
       c.node.remove();
