@@ -90,7 +90,7 @@ module.exports = function (opts) {
       opts.preprocess(document, $, data);
     }
 
-  }).
+  })
   .set({
     // 'fields': ['@data-field'],
     'elements': [osmosis.find(opts.includeBody ? '[' + opts.contextAttr + ']' : 'body [' + opts.contextAttr + ']').then(function (node, data, next) {
