@@ -82,14 +82,13 @@ module.exports = function (opts) {
     }
   })
   .click('body')
-  .then(function (document, data, next) {
+  .then(function (document, data) {
     var window = document.defaultView,
         $ = window.jQuery;
 
     if (opts.preprocess instanceof Function) {
       opts.preprocess(document, $, data);
     }
-
   })
   .set({
     // 'fields': ['@data-field'],
