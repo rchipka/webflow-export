@@ -81,6 +81,16 @@ module.exports = function (opts) {
       jQuery.setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.js');
     }
   })
+  .click('body')
+  .then(function (document, data, next) {
+    var window = document.defaultView,
+        $ = window.jQuery;
+
+    if (opts.preprocess instanceof Function) {
+      opts.preprocess(document, $, data);
+    }
+
+  }).
   .set({
     // 'fields': ['@data-field'],
     'elements': [osmosis.find(opts.includeBody ? '[' + opts.contextAttr + ']' : 'body [' + opts.contextAttr + ']').then(function (node, data, next) {
@@ -105,14 +115,9 @@ module.exports = function (opts) {
       next(node, data);
     })],
   })
-  .click('body')
   .then(function (document, data, next) {
     var window = document.defaultView,
         $ = window.jQuery;
-
-    if (opts.preprocess instanceof Function) {
-      opts.preprocess(document, $, data);
-    }
 
     $('span[aria-hidden="true"]').remove();
 
